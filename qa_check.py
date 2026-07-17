@@ -4,14 +4,16 @@
 from __future__ import annotations
 
 import argparse
+import ssl
 from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parent
+SYSTEM_CA_BUNDLE = Path("/etc/ssl/cert.pem")
 
 
 class PrototypeParser(HTMLParser):
@@ -117,10 +119,14 @@ def main() -> int:
           "Traceability review renders a structured source page with highlighted evidence", failures)
 
     if args.url:
+        ssl_context = ssl.create_default_context()
+        if SYSTEM_CA_BUNDLE.exists():
+            ssl_context.load_verify_locations(cafile=str(SYSTEM_CA_BUNDLE))
         for asset in ("", "index.html", "styles.css", "app.js", "favicon.svg"):
             target = urljoin(args.url.rstrip("/") + "/", asset)
             try:
-                with urlopen(target, timeout=3) as response:
+                request = Request(target, headers={"User-Agent": "LedgerLift-QA/1.0"})
+                with urlopen(request, timeout=3, context=ssl_context) as response:
                     ok = response.status == 200
             except Exception:
                 ok = False
