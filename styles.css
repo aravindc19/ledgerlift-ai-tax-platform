@@ -471,6 +471,7 @@ button:focus-visible,
   font-weight: 800;
   margin: 8px 0 4px;
   letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
 }
 
 .stack,
@@ -673,7 +674,8 @@ button:focus-visible,
   margin-top: 12px;
 }
 
-.object-node {
+.object-node,
+.object-chip {
   min-height: 44px;
   padding: 10px 12px;
   border-radius: 12px;
@@ -681,9 +683,17 @@ button:focus-visible,
   border: 1px solid #c7dbef;
   font-size: 13px;
   color: var(--brand-3);
-  cursor: pointer;
   font-weight: 700;
   text-align: left;
+}
+
+.object-node {
+  cursor: pointer;
+}
+
+.object-chip {
+  display: inline-flex;
+  align-items: center;
 }
 
 .object-node:hover {

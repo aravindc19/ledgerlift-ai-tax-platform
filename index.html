@@ -1,16 +1,16 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta
       name="description"
       content="LedgerLift is a role-aware AI tax workspace focused on traceability, reviewer judgment, and clear client action."
-    />
+    >
     <title>LedgerLift Tax Platform</title>
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="shortcut icon" href="./favicon.svg" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link rel="shortcut icon" href="./favicon.svg">
+    <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -58,13 +58,13 @@
 
         <nav class="breadcrumbs" id="breadcrumbs" aria-label="Breadcrumb"></nav>
 
-        <section class="route active" id="route-dashboard"></section>
-        <section class="route" id="route-collaboration"></section>
-        <section class="route" id="route-status"></section>
-        <section class="route" id="route-workspace"></section>
-        <section class="route" id="route-review"></section>
-        <section class="route" id="route-complexity"></section>
-        <section class="route" id="route-client"></section>
+        <div class="route active" id="route-dashboard"></div>
+        <div class="route" id="route-collaboration"></div>
+        <div class="route" id="route-status"></div>
+        <div class="route" id="route-workspace"></div>
+        <div class="route" id="route-review"></div>
+        <div class="route" id="route-complexity"></div>
+        <div class="route" id="route-client"></div>
       </main>
     </div>
 
@@ -80,7 +80,7 @@
           <span class="file-picker-title">Choose a document</span>
           <span class="muted tiny" id="upload-file-name">No file selected</span>
         </label>
-        <input class="sr-only" id="upload-file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-describedby="upload-file-name upload-file-error" />
+        <input class="sr-only" id="upload-file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-describedby="upload-file-name upload-file-error">
         <p class="form-error" id="upload-file-error" role="alert"></p>
         <div class="dialog-actions">
           <button type="submit" class="ghost-button" value="cancel">Cancel</button>
@@ -99,11 +99,11 @@
         <fieldset class="choice-group">
           <legend class="sr-only">Choose what the vehicle percentage represents</legend>
           <label class="choice-card">
-            <input type="radio" name="vehicle-use" value="business-miles" checked />
+            <input type="radio" name="vehicle-use" value="business-miles" checked>
             <span><strong>Business miles only</strong><small>82% of annual miles were for business.</small></span>
           </label>
           <label class="choice-card">
-            <input type="radio" name="vehicle-use" value="total-usage" />
+            <input type="radio" name="vehicle-use" value="total-usage">
             <span><strong>Total vehicle usage</strong><small>I may need my CPA to help correct this.</small></span>
           </label>
         </fieldset>

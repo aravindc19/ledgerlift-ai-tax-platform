@@ -77,10 +77,10 @@ const data = {
       entity: "Partnership",
       stage: "Ready for reviewer",
       nextOwner: "Reviewer",
-      blocking: "None",
+      blocking: "Confirm foreign transaction disclosure classification",
       urgency: "Normal",
       completion: 93,
-      summary: "Submission package is complete and internally consistent.",
+      summary: "Preparation is complete; one disclosure classification awaits reviewer judgment.",
       assignedTo: "Maya Chen",
       counts: { openRequests: 0, aiWarnings: 1, verifiedFields: 29, totalFields: 31 },
     },
@@ -107,7 +107,7 @@ const data = {
     {
       type: "client",
       title: "Start Parker reviewer handoff",
-      reason: "All critical fields are verified, so a reviewer can finish without preparer follow-up.",
+      reason: "Preparation is complete, so the reviewer can resolve the final disclosure classification without preparer follow-up.",
       action: "Open return workspace",
       returnId: "return-parker-2025",
       route: "workspace",
@@ -624,6 +624,42 @@ function getActiveTimeline() {
   return data.returnTimelines[state.activeReturnId] || data.timeline;
 }
 
+function getVisibleTimeline() {
+  if (isStaffRole()) return getActiveTimeline();
+  return [
+    {
+      label: "Documents received",
+      state: "ready",
+      note: "Your uploaded documents are available to your CPA.",
+    },
+    {
+      label: "Preparation in progress",
+      state: "ready",
+      note: "Your CPA is organizing and reviewing your information.",
+    },
+    {
+      label: state.clientVehicleConfirmed
+        ? "Client checklist complete"
+        : state.clientUploadComplete
+          ? "One confirmation remaining"
+          : "Client action needed",
+      state: state.clientVehicleConfirmed ? "ready" : "blocked",
+      note: state.clientVehicleConfirmed
+        ? "Every requested client item is complete."
+        : state.clientUploadComplete
+          ? "Confirm what the vehicle-use percentage represents."
+          : "Upload the requested officer insurance statement.",
+    },
+    {
+      label: "Final internal review",
+      state: state.clientVehicleConfirmed ? "ready" : "blocked",
+      note: state.clientVehicleConfirmed
+        ? "Your CPA owns the next step."
+        : "This begins after your requested items are complete.",
+    },
+  ];
+}
+
 function getWorkspaceTarget(linkLabel) {
   if (/message|note/i.test(linkLabel)) return "messages";
   if (/document|package|schedule|K-1/i.test(linkLabel)) return "documents";
@@ -691,6 +727,7 @@ function setRoute(route) {
 
 function openReturn(returnId, route = "workspace", fieldId = null) {
   state.activeReturnId = returnId;
+  state.dashboardSelectedReturnId = returnId;
   state.route = route;
   state.correctionFieldId = null;
   if (route === "review") {
@@ -722,6 +759,11 @@ function pickField(fieldId) {
 }
 
 function normalizeState() {
+  const returnFields = getReviewFields();
+  if (!returnFields.some((field) => field.id === state.reviewFieldId)) {
+    state.reviewFieldId = returnFields.find((field) => field.state === "ai")?.id || returnFields[0]?.id;
+    state.correctionFieldId = null;
+  }
   if (state.role === "client") {
     if (["dashboard", "review", "complexity"].includes(state.route)) {
       state.route = "client";
@@ -819,7 +861,12 @@ function renderDashboard() {
   const visibleReturns = queueReturns.slice(pageStart, pageStart + state.dashboardPageSize);
   const focusedReturn =
     queueReturns.find((item) => item.id === state.dashboardSelectedReturnId) || queueReturns[0] || null;
-  if (focusedReturn) state.dashboardSelectedReturnId = focusedReturn.id;
+  if (focusedReturn) {
+    state.dashboardSelectedReturnId = focusedReturn.id;
+    if (state.route === "dashboard" && isStaffRole() && data.returns.some((item) => item.id === focusedReturn.id)) {
+      state.activeReturnId = focusedReturn.id;
+    }
+  }
   const metrics = getDashboardMetrics(queueReturns);
   const rankedPriorityCards = getRankedPriorityCards();
   const scopeLabel = state.dashboardScope === "firm" ? "Firm queue" : "My assignments";
@@ -983,6 +1030,7 @@ function renderDashboard() {
       const selectedScope = button.dataset.dashboardScope;
       state.dashboardScope = selectedScope;
       state.dashboardPage = 1;
+      state.dashboardSelectedReturnId = getDashboardReturns()[0]?.id || "";
       renderDashboard();
       restoreFocus(`[data-dashboard-scope="${selectedScope}"]`);
       announce(`${selectedScope === "firm" ? "Firm queue" : "My assignments"} loaded.`);
@@ -994,6 +1042,7 @@ function renderDashboard() {
   dashboardSearch.addEventListener("input", (event) => {
     state.dashboardQuery = event.target.value;
     state.dashboardPage = 1;
+    state.dashboardSelectedReturnId = getDashboardReturns()[0]?.id || "";
     const cursorPosition = event.target.selectionStart;
     renderDashboard();
     window.requestAnimationFrame(() => {
@@ -1086,7 +1135,7 @@ function renderCollaboration() {
                     <span class="pill">Updated ${thread.lastUpdate}</span>
                   </div>
                   <div class="object-map">
-                    ${thread.linkedTo.map((item) => `<span class="object-node">${item}</span>`).join("")}
+                    ${thread.linkedTo.map((item) => `<span class="object-chip">${item}</span>`).join("")}
                   </div>
                   <div class="stack" style="margin-top:12px;">
                     ${thread.messages
@@ -1154,6 +1203,22 @@ function renderCollaboration() {
 function renderStatus() {
   const route = document.getElementById("route-status");
   const activeReturn = getActiveReturn();
+  const activeTimeline = getVisibleTimeline();
+  const completedMilestones = activeTimeline
+    .filter((item) => item.state === "ready")
+    .map((item) => item.label);
+  const happenedSummary = completedMilestones.length
+    ? `${completedMilestones.slice(0, 2).join(" and ")} ${completedMilestones.length === 1 ? "is" : "are"} complete.`
+    : "No workflow milestones are complete yet.";
+  const nextOwnerLabel =
+    state.role === "client" && activeReturn.nextOwner === "CPA"
+      ? "Your CPA"
+      : state.role === "client" && activeReturn.nextOwner === "Client"
+        ? "You"
+        : `The ${activeReturn.nextOwner.toLowerCase()}`;
+  const nextActionSummary = ["None", "No client blockers"].includes(activeReturn.blocking)
+    ? `${nextOwnerLabel} can continue; there is no current blocking issue.`
+    : `${nextOwnerLabel} ${nextOwnerLabel === "You" ? "own" : "owns"} the next step: ${activeReturn.blocking}.`;
 
   route.innerHTML = `
     <div class="stack">
@@ -1208,11 +1273,11 @@ function renderStatus() {
           <div class="mini-kpi-row">
             <div class="kpi">
               <p class="label">What happened</p>
-              <p class="muted">Documents arrived, AI extraction completed, and preparation is mostly complete.</p>
+              <p class="muted">${happenedSummary}</p>
             </div>
             <div class="kpi">
               <p class="label">What is next</p>
-              <p class="muted">${activeReturn.blocking}</p>
+              <p class="muted">${nextActionSummary}</p>
             </div>
           </div>
         </section>
@@ -1234,7 +1299,7 @@ function renderStatus() {
 function renderWorkspace() {
   const activeReturn = getActiveReturn();
   const workspace = getActiveWorkspace();
-  const timeline = getActiveTimeline();
+  const timeline = getVisibleTimeline();
   const route = document.getElementById("route-workspace");
   const tabs = [
     { key: "overview", label: "Overview" },
@@ -2074,20 +2139,31 @@ function renderClient() {
 }
 
 function renderRoutes() {
-  renderDashboard();
+  if (isStaffRole()) {
+    renderDashboard();
+    renderReview();
+    renderComplexity();
+  } else {
+    ["dashboard", "review", "complexity"].forEach((routeName) => {
+      document.getElementById(`route-${routeName}`).innerHTML = "";
+    });
+  }
   renderCollaboration();
   renderStatus();
   renderWorkspace();
-  renderReview();
-  renderComplexity();
   renderClient();
   document.querySelectorAll(".route").forEach((section) => {
     const isActive = section.id === `route-${state.route}`;
     section.classList.toggle("active", isActive);
     section.hidden = !isActive;
     section.setAttribute("aria-hidden", String(!isActive));
-    if (isActive) section.setAttribute("aria-labelledby", "page-title");
-    else section.removeAttribute("aria-labelledby");
+    if (isActive) {
+      section.setAttribute("role", "region");
+      section.setAttribute("aria-labelledby", "page-title");
+    } else {
+      section.removeAttribute("role");
+      section.removeAttribute("aria-labelledby");
+    }
   });
 }
 

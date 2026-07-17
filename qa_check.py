@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import ssl
 from collections import Counter
 from html.parser import HTMLParser
@@ -79,6 +80,9 @@ def main() -> int:
     duplicates = [item for item, count in Counter(audit.ids).items() if count > 1]
     check(not duplicates, "Static HTML IDs are unique", failures)
     check(not audit.buttons_without_type, "Every static button declares its type", failures)
+    dynamic_buttons = re.findall(r"<button\b[^>]*>", js)
+    check(bool(dynamic_buttons) and all('type="' in button for button in dynamic_buttons),
+          "Every dynamically rendered button declares its type", failures)
     check(all((ROOT / asset.split("#", 1)[0].removeprefix("./")).exists() for asset in audit.local_assets),
           "All local HTML assets exist", failures)
     check(bool(audit.skip_targets) and all(target in audit.ids for target in audit.skip_targets),
@@ -93,6 +97,9 @@ def main() -> int:
     check(not unlabeled_inputs, "Static form controls have labels", failures)
     check("aria-live" in html and "aria-pressed" in js and "aria-current" in js,
           "Dynamic states expose assistive-technology cues", failures)
+    check('section.setAttribute("role", "region")' in js and
+          'section.removeAttribute("role")' in js,
+          "Only the active route is exposed as a labeled region", failures)
     check("prefers-reduced-motion" in css and "forced-colors" in css,
           "Reduced-motion and forced-color preferences are supported", failures)
     check("TODO" not in html + css + js and "FIXME" not in html + css + js,
@@ -104,6 +111,14 @@ def main() -> int:
     check('audience: "internal"' in js and
           '.filter((doc) => isStaffRole() || doc.audience === "client")' in js,
           "Client document views filter internal-only records", failures)
+    check('if (isStaffRole()) {' in js and
+          '["dashboard", "review", "complexity"].forEach((routeName)' in js and
+          'document.getElementById(`route-${routeName}`).innerHTML = "";' in js,
+          "Client mode removes staff-only route content from the rendered DOM", failures)
+    check('function getVisibleTimeline()' in js and
+          'if (isStaffRole()) return getActiveTimeline();' in js and
+          'label: "Preparation in progress"' in js,
+          "Client timeline replaces internal workflow details with client-safe wording", failures)
     check("function restoreFocus" in js and js.count("restoreFocus(") >= 8,
           "Dynamic control updates restore keyboard focus", failures)
     check("file.size > MAX_UPLOAD_SIZE_BYTES" in js and "upload-file-error" in html,
@@ -114,6 +129,15 @@ def main() -> int:
     check('dashboardScope: "mine"' in js and 'data-dashboard-scope="firm"' in js and
           'id="dashboard-search"' in js and 'id="dashboard-next-page"' in js,
           "Dashboard supports preparer and firm queues with search and pagination", failures)
+    check('state.dashboardSelectedReturnId = returnId;' in js and
+          js.count('state.dashboardSelectedReturnId = getDashboardReturns()[0]?.id || "";') >= 2 and
+          'state.route === "dashboard" && isStaffRole()' in js,
+          "Dashboard focus stays aligned after opening, filtering, and searching", failures)
+    check('blocking: "Confirm foreign transaction disclosure classification"' in js and
+          'const nextActionSummary =' in js,
+          "Focused-return status uses accurate return-specific blockers", failures)
+    check('class="object-chip"' in js and ".object-chip" in css,
+          "Informational relationship labels are not styled as controls", failures)
     check('class="document-sheet"' in js and 'class="source-highlight"' in js and
           ".document-identity-grid" in css,
           "Traceability review renders a structured source page with highlighted evidence", failures)
