@@ -337,7 +337,7 @@ const data = {
       evidence: "Box 1 shows 184,500.00. No transformation applied.",
       confidence: 98,
       state: "verified",
-      suggestionExplanation: "The value was read directly from W-2 Box 1 and matched a single wage field.",
+      reviewNote: "The value was read directly from W-2 Box 1 and matched a single wage field.",
       history: "Imported → matched to federal wages → CPA verified",
       canEdit: "Locked after verification",
     },
@@ -353,7 +353,7 @@ const data = {
         "The system found 21,460.00 next to Box 4, but nearby labels are visually crowded.",
       confidence: 64,
       state: "suggested",
-      suggestionExplanation:
+      reviewNote:
         "The amount likely maps to federal withholding, but confidence is lower because the scanned PDF has overlapping annotations near Boxes 4 and 14.",
       history: "Imported → automated source match flagged → awaiting CPA review",
       canEdit: "Editable with reason",
@@ -369,7 +369,7 @@ const data = {
       evidence: "No source uploaded yet. This field is intentionally unresolved.",
       confidence: 0,
       state: "locked",
-      suggestionExplanation: "No value is suggested because the source package is incomplete.",
+      reviewNote: "No value is available because the source package is incomplete.",
       history: "Open request sent to client",
       canEdit: "Locked until source arrives",
     },
@@ -384,7 +384,7 @@ const data = {
       evidence: "Client answered 82% on the questionnaire. CPA can override after review.",
       confidence: 89,
       state: "editable",
-      suggestionExplanation: "Client-provided answer cross-checked against prior-year usage and mileage totals.",
+      reviewNote: "Client-provided answer compared with prior-year usage and mileage totals.",
       history: "Client answered → automated consistency check passed → preparer review pending",
       canEdit: "Editable",
     },
@@ -399,7 +399,7 @@ const data = {
       evidence: "Box 2a shows 86,200.00 and matches the taxable amount imported into the return.",
       confidence: 97,
       state: "verified",
-      suggestionExplanation: "The value was read directly from Box 2a with a matching distribution code and no competing amount nearby.",
+      reviewNote: "The value was read directly from Box 2a with a matching distribution code and no competing amount nearby.",
       history: "Imported → mapped to taxable pension income → CPA verified",
       canEdit: "Locked after verification",
     },
@@ -414,7 +414,7 @@ const data = {
       evidence: "Box 14 shows 4,115.00. The value is legible but remains editable until state allocation is confirmed.",
       confidence: 91,
       state: "editable",
-      suggestionExplanation: "The amount and California payer context are consistent; preparer judgment is still required for allocation.",
+      reviewNote: "The amount and California payer context are consistent; preparer judgment is still required for allocation.",
       history: "Imported → state matched → preparer review pending",
       canEdit: "Editable",
     },
@@ -429,7 +429,7 @@ const data = {
       evidence: "Line 22 reconciles to the partner allocation schedule and the draft K-1 package.",
       confidence: 99,
       state: "verified",
-      suggestionExplanation: "The return total and all partner allocations reconcile without a variance.",
+      reviewNote: "The return total and all partner allocations reconcile without a variance.",
       history: "Calculated → reconciled to K-1 allocation schedule → reviewer verified",
       canEdit: "Locked after verification",
     },
@@ -444,7 +444,7 @@ const data = {
       evidence: "Four quarterly payments of 24,000 reconcile to the general ledger and allocation schedule.",
       confidence: 96,
       state: "verified",
-      suggestionExplanation: "The schedule, ledger postings, and return line agree exactly.",
+      reviewNote: "The schedule, ledger postings, and return line agree exactly.",
       history: "Ledger grouped → schedule matched → preparer and reviewer verified",
       canEdit: "Locked after verification",
     },
@@ -459,7 +459,7 @@ const data = {
       evidence: "A cross-border software payment is documented, but the disclosure category requires reviewer judgment.",
       confidence: 72,
       state: "suggested",
-      suggestionExplanation: "The payment pattern suggests a reportable category, but contract language is not conclusive enough to automate.",
+      reviewNote: "The payment pattern suggests a reportable category, but contract language is not conclusive enough to automate.",
       history: "Statement imported → automated check flagged potential disclosure → awaiting reviewer decision",
       canEdit: "Editable with reason",
     },
@@ -579,7 +579,7 @@ const pageTitles = {
 };
 
 const fieldStateLabels = {
-  suggested: "AI-generated · Needs approval",
+  suggested: "Suggested · Needs approval",
   verified: "Verified",
   editable: "Editable",
   locked: "Locked",
@@ -1502,6 +1502,16 @@ function renderReview() {
   const route = document.getElementById("route-review");
   const activeField = getActiveField();
   const reviewFields = getReviewFields();
+  const reviewNoteLabel = {
+    suggested: "Why this was suggested",
+    verified: "Verification note",
+    editable: "Validation note",
+    locked: "Why this is unavailable",
+  }[activeField.state];
+  const activeFieldStateLabel =
+    activeField.state === "suggested"
+      ? "AI-generated · Needs approval"
+      : fieldStateLabels[activeField.state];
 
   route.innerHTML = `
     <div class="review-grid">
@@ -1512,7 +1522,7 @@ function renderReview() {
             <h3 class="section-title">Review field states</h3>
           </div>
           <div class="row-inline">
-            <span class="field-state suggested">AI-generated · Needs approval</span>
+            <span class="field-state suggested">Suggested · Needs approval</span>
             <span class="field-state verified">Verified</span>
             <span class="field-state editable">Editable</span>
             <span class="field-state locked">Locked</span>
@@ -1547,7 +1557,7 @@ function renderReview() {
               <p class="label">Selected field traceability</p>
               <h3 class="section-title">${escapeHtml(activeField.label)}</h3>
             </div>
-            <span class="field-state ${activeField.state}">${fieldStateLabels[activeField.state]}</span>
+            <span class="field-state ${activeField.state}">${activeFieldStateLabel}</span>
           </div>
           <div class="summary-list">
             <article class="summary-row">
@@ -1562,16 +1572,20 @@ function renderReview() {
             </article>
 
             <article class="summary-row">
-              <p class="label">Why this was suggested</p>
-              <p>${escapeHtml(activeField.suggestionExplanation)}</p>
-              <div class="confidence-meter" style="margin-top:12px;" role="progressbar" aria-label="Source-match confidence" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${activeField.confidence}">
-                <strong>${activeField.confidence}%</strong>
-                <div class="confidence-track"><span style="width:${activeField.confidence}%"></span></div>
-              </div>
+              <p class="label">${reviewNoteLabel}</p>
+              <p>${escapeHtml(activeField.reviewNote)}</p>
+              ${
+                activeField.state === "suggested"
+                  ? `<div class="confidence-meter" style="margin-top:12px;" role="progressbar" aria-label="Source-match confidence" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${activeField.confidence}">
+                      <strong>${activeField.confidence}%</strong>
+                      <div class="confidence-track"><span style="width:${activeField.confidence}%"></span></div>
+                    </div>`
+                  : ""
+              }
             </article>
 
             <article class="summary-row">
-              <p class="label">Transformation trail</p>
+              <p class="label">Review history</p>
               <p>${escapeHtml(activeField.history)}</p>
             </article>
             <article class="summary-row">
@@ -1682,7 +1696,7 @@ function renderReview() {
     activeField.confidence = 100;
     activeField.history = `${activeField.history} → ${actionOwner} confirmed mapping`;
     activeField.canEdit = "Locked after verification";
-    activeField.suggestionExplanation = `${activeField.suggestionExplanation} Human review confirmed the recommendation.`;
+    activeField.reviewNote = `${activeField.reviewNote} Human review confirmed the recommendation.`;
     const activeReturn = getActiveReturn();
     activeReturn.counts.reviewFlags = Math.max(0, activeReturn.counts.reviewFlags - 1);
     render();
@@ -1718,7 +1732,7 @@ function renderReview() {
     activeField.state = "verified";
     activeField.confidence = 100;
     activeField.canEdit = "Locked after verification";
-    activeField.suggestionExplanation = "The original automated suggestion was replaced by a human-reviewed correction. The reason remains in the audit trail.";
+    activeField.reviewNote = "The original automated suggestion was replaced by a human-reviewed correction. The reason remains in the audit trail.";
     state.correctionFieldId = null;
     const activeReturn = getActiveReturn();
     if (wasSuggested) {
@@ -1923,7 +1937,7 @@ function completeClientUpload() {
   insuranceField.evidence = "The uploaded statement shows 14,880.00 in eligible officer health insurance premiums.";
   insuranceField.confidence = 93;
   insuranceField.state = "suggested";
-  insuranceField.suggestionExplanation = "The statement total is clear and matches twelve monthly premium entries; CPA classification review remains required.";
+  insuranceField.reviewNote = "The statement total is clear and matches twelve monthly premium entries; CPA classification review remains required.";
   insuranceField.history = "Client uploaded → statement total captured → awaiting CPA classification review";
   insuranceField.canEdit = "Editable with reason";
   const insuranceRequest = data.workspace.requests.find((request) => request.title.startsWith("Officer health"));
@@ -1965,19 +1979,19 @@ function completeVehicleConfirmation(event) {
   const isBusinessMiles = selectedVehicleUse === "business-miles";
   state.clientVehicleConfirmed = true;
   const vehicleField = data.reviewFields.find((field) => field.id === "vehicle-use");
-  const addsReviewFlag = !isBusinessMiles && vehicleField.state !== "suggested";
+  const addsReviewFlag = !isBusinessMiles;
   vehicleField.value = isBusinessMiles ? "82%" : "Needs preparer correction";
   vehicleField.evidence = isBusinessMiles
     ? "Client confirmed that 82% represents business miles only. The preparer can override after source review."
     : "Client clarified that 82% represents total vehicle usage, not business miles. The preparer must correct the business-use percentage.";
   vehicleField.confidence = isBusinessMiles ? 94 : 38;
-  vehicleField.state = isBusinessMiles ? "editable" : "suggested";
+  vehicleField.state = "editable";
   vehicleField.history = isBusinessMiles
     ? "Client answered → client confirmed business-mile meaning → automated consistency check passed → preparer review pending"
     : "Client answered → client clarified total-usage meaning → preparer correction required";
-  vehicleField.suggestionExplanation = isBusinessMiles
+  vehicleField.reviewNote = isBusinessMiles
     ? "The client confirmed that 82% refers to business miles, and the answer remains editable until preparer review."
-    : "The client clarified that 82% is total usage, so the system withheld a business-use recommendation and routed the field for correction.";
+    : "The client clarified that 82% is total vehicle usage, so the preparer must enter the supported business-use percentage.";
   vehicleField.canEdit = isBusinessMiles ? "Editable" : "Editable with reason";
   const vehicleRequest = data.workspace.requests.find((request) => request.title.startsWith("Confirm business-use"));
   vehicleRequest.state = "complete";
