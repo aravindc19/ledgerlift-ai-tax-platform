@@ -1,6 +1,6 @@
 # LedgerLift
 
-LedgerLift is an accessible, role-aware tax workflow that keeps client requests, return status, source evidence, and AI-assisted review connected in one interface.
+LedgerLift is an accessible, role-aware tax workflow that keeps client requests, return status, source evidence, and human review connected in one interface.
 
 **[Open the live prototype](https://aravindc19.github.io/ledgerlift-ai-tax-platform/)**
 
@@ -9,7 +9,7 @@ LedgerLift is an accessible, role-aware tax workflow that keeps client requests,
 - Action-first CPA dashboard with personal and firm scopes, search, pagination, and priorities calculated across 148 generated returns
 - Connected return workspace for documents, messages, requests, and workflow history
 - Source-level traceability from a return field to a structured document page, highlighted evidence, confidence, and transformation trail
-- AI confirmation and correction flows with required human reasoning and an audit trail
+- Human confirmation and correction flows for generated field suggestions, with required reasoning and an audit trail
 - Role switching among preparer, reviewer, and personal-client contexts
 - Client-safe rendering that separates internal notes and documents from client-visible information
 - Shared return status with audience-appropriate wording, blockers, and next-action ownership
@@ -25,7 +25,7 @@ LedgerLift is an accessible, role-aware tax workflow that keeps client requests,
 - Complexity search, filtering, incremental loading, and connected-return navigation
 - Priority scoring and dashboard metrics computed from generated portfolio data
 - Searchable, paginated queue switching between personal assignments and the full firm portfolio
-- AI-field confirmation and correction with a required reason
+- Suggested-field confirmation and correction with a required reason
 - Client document selection with PDF/JPG/PNG and 20 MB validation
 - Client answers that update ownership, status, requests, priorities, and review state across the product
 - Keyboard focus restoration after dynamic updates
@@ -83,10 +83,10 @@ This is a prototype-level accessibility implementation rather than a formal WCAG
 
 ## Design decisions
 
-- Priorities combine blocker state, current owner, urgency, and AI risk so the dashboard leads directly to action.
+- Priorities combine blocker state, current owner, urgency, and source-match risk so the dashboard leads directly to action.
 - Conversations stay attached to requests, documents, and return issues instead of becoming a separate inbox.
 - One shared shell adapts by role so personal and firm contexts remain distinct without splitting into separate products.
-- AI output includes evidence, uncertainty, editability, and an explicit human decision path.
+- AI-generated suggestions are clearly identified and include evidence, uncertainty, editability, and an explicit human decision path.
 - Client actions update the connected workflow rather than changing only the screen where the action occurred.
 - Large workspaces use summary/detail views and progressive disclosure instead of rendering every item at once.
 

@@ -123,9 +123,23 @@ def main() -> int:
           "Dynamic control updates restore keyboard focus", failures)
     check("file.size > MAX_UPLOAD_SIZE_BYTES" in js and "upload-file-error" in html,
           "Upload type and 20 MB validation are wired to accessible feedback", failures)
-    check("reduce((total, item) => total + item.counts.aiWarnings, 0)" in js and
+    check("reduce((total, item) => total + item.counts.reviewFlags, 0)" in js and
           "Math.min(18, remainingItems)" in js,
           "Dashboard and pagination labels use accurate counts", failures)
+    unnecessary_ai_phrases = (
+        "AI review needed",
+        "AI extracted",
+        "AI warnings",
+        "AI warning",
+        "AI risk",
+        "AI reasoning",
+        "AI assistant",
+        "AI sanity-check",
+    )
+    check(not any(phrase in html + js for phrase in unnecessary_ai_phrases) and
+          len(re.findall(r"\bAI\b", html + js)) == 2 and
+          'suggested: "AI-generated · Needs approval"' in js,
+          "AI terminology is limited to explicit provenance in staff review", failures)
     check('dashboardScope: "mine"' in js and 'data-dashboard-scope="firm"' in js and
           'id="dashboard-search"' in js and 'id="dashboard-next-page"' in js,
           "Dashboard supports preparer and firm queues with search and pagination", failures)

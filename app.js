@@ -54,21 +54,21 @@ const data = {
       summary:
         "Most of the return is assembled. Two source-linked fields need confirmation before review can finish.",
       assignedTo: "Aravind",
-      counts: { openRequests: 2, aiWarnings: 3, verifiedFields: 18, totalFields: 24 },
+      counts: { openRequests: 2, reviewFlags: 3, verifiedFields: 18, totalFields: 24 },
     },
     {
       id: "return-ramos-2025",
       client: "Ramos Family",
       year: "2025",
       entity: "1040",
-      stage: "AI review needed",
+      stage: "CPA verification needed",
       nextOwner: "CPA",
       blocking: "1099-R withholding mismatch",
       urgency: "High",
       completion: 61,
-      summary: "AI extracted the retirement distribution, but the withholding source is ambiguous.",
+      summary: "The system mapped $21,460 from 1099-R Box 4 to federal withholding with 64% confidence. A CPA must verify the source.",
       assignedTo: "Aravind",
-      counts: { openRequests: 0, aiWarnings: 4, verifiedFields: 11, totalFields: 19 },
+      counts: { openRequests: 0, reviewFlags: 4, verifiedFields: 11, totalFields: 19 },
     },
     {
       id: "return-parker-2025",
@@ -82,14 +82,14 @@ const data = {
       completion: 93,
       summary: "Preparation is complete; one disclosure classification awaits reviewer judgment.",
       assignedTo: "Maya Chen",
-      counts: { openRequests: 0, aiWarnings: 1, verifiedFields: 29, totalFields: 31 },
+      counts: { openRequests: 0, reviewFlags: 1, verifiedFields: 29, totalFields: 31 },
     },
   ],
   priorityCards: [
     {
       type: "risk",
       title: "Fix withholding mismatch on Ramos Family return",
-      reason: "AI confidence dropped to 64% because the source line may map to federal tax withheld, not state.",
+      reason: "The source match is only 64% confident because nearby Box 4 and Box 14 labels overlap.",
       action: "Open traceability review",
       returnId: "return-ramos-2025",
       route: "review",
@@ -116,7 +116,7 @@ const data = {
   ],
   timeline: [
     { label: "Documents received", state: "ready", note: "W-2, 1099s, prior-year package uploaded" },
-    { label: "AI extraction completed", state: "ready", note: "24 fields mapped with confidence scores" },
+    { label: "Document fields captured", state: "ready", note: "24 source-linked fields prepared for review" },
     { label: "Client follow-up needed", state: "blocked", note: "Officer insurance statement still missing" },
     { label: "Reviewer handoff", state: "ready", note: "Available once missing document arrives" },
   ],
@@ -142,7 +142,7 @@ const data = {
     ],
     docs: [
       { id: "doc-w2", title: "W-2 · Jenna Ashford", tag: "Verified", note: "Linked to wages and withholding fields", audience: "client" },
-      { id: "doc-payroll", title: "Q4 payroll reconciliation", tag: "AI warning", note: "Officer wages need a final reasonableness check", audience: "internal" },
+      { id: "doc-payroll", title: "Q4 payroll reconciliation", tag: "Needs review", note: "Officer wages need a final reasonableness check", audience: "internal" },
       { id: "doc-insurance", title: "Officer insurance statement", tag: "Missing", note: "Client has not uploaded yet", audience: "client" },
     ],
   },
@@ -168,7 +168,7 @@ const data = {
         { title: "Review retirement distribution code", due: "Today", state: "open", owner: "Reviewer" },
       ],
       docs: [
-        { id: "doc-ramos-1099r", title: "1099-R · Fidelity", tag: "AI warning", note: "Box 4 mapping needs human confirmation", audience: "internal" },
+        { id: "doc-ramos-1099r", title: "1099-R · Fidelity", tag: "Needs review", note: "Box 4 mapping needs human confirmation", audience: "internal" },
         { id: "doc-ramos-ssa", title: "SSA-1099 · Ramos Family", tag: "Verified", note: "Benefits and withholding are source-linked", audience: "client" },
         { id: "doc-ramos-prior", title: "2024 return package", tag: "Verified", note: "Used only for comparison and anomaly review", audience: "client" },
       ],
@@ -195,14 +195,14 @@ const data = {
       docs: [
         { id: "doc-parker-k1", title: "Draft partner K-1 package", tag: "Verified", note: "Allocation totals reconcile to the partnership return", audience: "client" },
         { id: "doc-parker-basis", title: "Partner basis schedules", tag: "Verified", note: "Beginning and ending basis roll forward correctly", audience: "client" },
-        { id: "doc-parker-foreign", title: "Foreign transaction statement", tag: "AI warning", note: "Disclosure classification awaits reviewer confirmation", audience: "internal" },
+        { id: "doc-parker-foreign", title: "Foreign transaction statement", tag: "Needs review", note: "Disclosure classification awaits reviewer confirmation", audience: "internal" },
       ],
     },
   },
   returnTimelines: {
     "return-ramos-2025": [
       { label: "Documents received", state: "ready", note: "1099-R, SSA-1099, and prior-year package uploaded" },
-      { label: "AI extraction completed", state: "ready", note: "19 fields mapped; one source ambiguity identified" },
+      { label: "Document fields captured", state: "ready", note: "19 fields captured; one source ambiguity identified" },
       { label: "Withholding review", state: "blocked", note: "CPA must confirm the Box 4 mapping" },
       { label: "Reviewer handoff", state: "ready", note: "Available after the warning is resolved" },
     ],
@@ -231,14 +231,14 @@ const data = {
     {
       id: "thread-withholding",
       title: "1099-R withholding mismatch review",
-      context: "Ramos Family · AI review issue",
+      context: "Ramos Family · Source review issue",
       visibility: "internal",
-      linkedTo: ["AI warning", "1099-R document", "Federal withholding field"],
+      linkedTo: ["Review flag", "1099-R document", "Federal withholding field"],
       owner: "CPA",
       status: "Needs internal review",
       lastUpdate: "July 17, 2026",
       messages: [
-        { author: "AI assistant", audience: "Internal note", body: "Confidence dropped to 64% because the line labels overlap near Boxes 4 and 14." },
+        { author: "Automated source check", audience: "Internal note", body: "Source-match confidence dropped to 64% because the line labels overlap near Boxes 4 and 14." },
         { author: "Reviewer", audience: "Internal note", body: "Confirm Box 4 before this reaches final review." },
       ],
     },
@@ -309,7 +309,7 @@ const data = {
             : kind === "Task"
               ? `Task ${idx + 1} · Follow-up action`
               : kind === "Warning"
-                ? `Warning ${idx + 1} · AI confidence`
+                ? `Warning ${idx + 1} · Source confidence`
                 : kind === "Message"
                   ? `Message ${idx + 1} · Thread context`
                   : `Calculation ${idx + 1} · Derived value`,
@@ -337,7 +337,7 @@ const data = {
       evidence: "Box 1 shows 184,500.00. No transformation applied.",
       confidence: 98,
       state: "verified",
-      aiExplanation: "Direct extraction from a standard W-2 layout with a single matching wage field.",
+      suggestionExplanation: "The value was read directly from W-2 Box 1 and matched a single wage field.",
       history: "Imported → matched to federal wages → CPA verified",
       canEdit: "Locked after verification",
     },
@@ -350,12 +350,12 @@ const data = {
       document: "1099-R · Fidelity",
       page: "Page 1",
       evidence:
-        "The extraction engine found 21,460.00 next to Box 4, but nearby labels are visually crowded.",
+        "The system found 21,460.00 next to Box 4, but nearby labels are visually crowded.",
       confidence: 64,
-      state: "ai",
-      aiExplanation:
-        "Likely correct, but confidence is lower because the scanned PDF has overlapping annotations near Boxes 4 and 14.",
-      history: "Imported → AI mapped with warning → awaiting CPA review",
+      state: "suggested",
+      suggestionExplanation:
+        "The amount likely maps to federal withholding, but confidence is lower because the scanned PDF has overlapping annotations near Boxes 4 and 14.",
+      history: "Imported → automated source match flagged → awaiting CPA review",
       canEdit: "Editable with reason",
     },
     {
@@ -369,7 +369,7 @@ const data = {
       evidence: "No source uploaded yet. This field is intentionally unresolved.",
       confidence: 0,
       state: "locked",
-      aiExplanation: "No recommendation shown because the source package is incomplete.",
+      suggestionExplanation: "No value is suggested because the source package is incomplete.",
       history: "Open request sent to client",
       canEdit: "Locked until source arrives",
     },
@@ -384,8 +384,8 @@ const data = {
       evidence: "Client answered 82% on the questionnaire. CPA can override after review.",
       confidence: 89,
       state: "editable",
-      aiExplanation: "Client-provided answer cross-checked against prior year usage and mileage totals.",
-      history: "Client answered → AI sanity-check passed → preparer review pending",
+      suggestionExplanation: "Client-provided answer cross-checked against prior-year usage and mileage totals.",
+      history: "Client answered → automated consistency check passed → preparer review pending",
       canEdit: "Editable",
     },
     {
@@ -399,7 +399,7 @@ const data = {
       evidence: "Box 2a shows 86,200.00 and matches the taxable amount imported into the return.",
       confidence: 97,
       state: "verified",
-      aiExplanation: "Direct extraction from Box 2a with a matching distribution code and no competing amount nearby.",
+      suggestionExplanation: "The value was read directly from Box 2a with a matching distribution code and no competing amount nearby.",
       history: "Imported → mapped to taxable pension income → CPA verified",
       canEdit: "Locked after verification",
     },
@@ -414,7 +414,7 @@ const data = {
       evidence: "Box 14 shows 4,115.00. The value is legible but remains editable until state allocation is confirmed.",
       confidence: 91,
       state: "editable",
-      aiExplanation: "The amount and California payer context are consistent; preparer judgment is still required for allocation.",
+      suggestionExplanation: "The amount and California payer context are consistent; preparer judgment is still required for allocation.",
       history: "Imported → state matched → preparer review pending",
       canEdit: "Editable",
     },
@@ -429,7 +429,7 @@ const data = {
       evidence: "Line 22 reconciles to the partner allocation schedule and the draft K-1 package.",
       confidence: 99,
       state: "verified",
-      aiExplanation: "The return total and all partner allocations reconcile without a variance.",
+      suggestionExplanation: "The return total and all partner allocations reconcile without a variance.",
       history: "Calculated → reconciled to K-1 allocation schedule → reviewer verified",
       canEdit: "Locked after verification",
     },
@@ -444,7 +444,7 @@ const data = {
       evidence: "Four quarterly payments of 24,000 reconcile to the general ledger and allocation schedule.",
       confidence: 96,
       state: "verified",
-      aiExplanation: "The schedule, ledger postings, and return line agree exactly.",
+      suggestionExplanation: "The schedule, ledger postings, and return line agree exactly.",
       history: "Ledger grouped → schedule matched → preparer and reviewer verified",
       canEdit: "Locked after verification",
     },
@@ -458,9 +458,9 @@ const data = {
       page: "Page 1",
       evidence: "A cross-border software payment is documented, but the disclosure category requires reviewer judgment.",
       confidence: 72,
-      state: "ai",
-      aiExplanation: "The payment pattern suggests a reportable category, but contract language is not conclusive enough to automate.",
-      history: "Statement imported → AI flagged potential disclosure → awaiting reviewer decision",
+      state: "suggested",
+      suggestionExplanation: "The payment pattern suggests a reportable category, but contract language is not conclusive enough to automate.",
+      history: "Statement imported → automated check flagged potential disclosure → awaiting reviewer decision",
       canEdit: "Editable with reason",
     },
   ],
@@ -486,7 +486,7 @@ const portfolioReturns = [
   ...Array.from({ length: 145 }, (_, index) => {
     const nextOwner = index % 17 === 0 ? "Client" : index % 7 === 0 ? "Reviewer" : "CPA";
     const urgency = index % 23 === 0 ? "High" : index % 19 === 0 ? "Today" : "Normal";
-    const aiWarnings = index % 13 === 0 ? 1 : 0;
+    const reviewFlags = index % 13 === 0 ? 1 : 0;
     const assignedTo = ["Aravind", "Maya Chen", "Jordan Lee", "Unassigned"][index % 4];
     return {
       id: `portfolio-return-${index + 1}`,
@@ -501,20 +501,20 @@ const portfolioReturns = [
       blocking:
         nextOwner === "Client"
           ? "Waiting for requested client information"
-          : aiWarnings > 0
-            ? "Resolve AI source warning"
+          : reviewFlags > 0
+            ? "Resolve source review flag"
             : "No blocking issue",
       summary:
         nextOwner === "Reviewer"
           ? "Preparation is complete and the return is queued for reviewer action."
           : nextOwner === "Client"
             ? "The return is paused until the client completes an outstanding request."
-            : aiWarnings > 0
-              ? "Preparation is active and one source-level AI warning needs attention."
+            : reviewFlags > 0
+              ? "Preparation is active and one source-level review flag needs attention."
               : "Preparation is moving forward with no current blocker.",
       counts: {
         openRequests: nextOwner === "Client" ? 1 : 0,
-        aiWarnings,
+        reviewFlags,
         verifiedFields: 8 + (index % 21),
         totalFields: 30,
       },
@@ -525,7 +525,7 @@ const portfolioReturns = [
 function getReturnPriorityScore(returnItem) {
   const urgencyWeight = { High: 22, Today: 16, Normal: 0 }[returnItem.urgency] || 0;
   const ownerWeight = returnItem.nextOwner === "CPA" ? 8 : returnItem.nextOwner === "Reviewer" ? 5 : 3;
-  return urgencyWeight + ownerWeight + returnItem.counts.aiWarnings * 6 + returnItem.counts.openRequests * 5;
+  return urgencyWeight + ownerWeight + returnItem.counts.reviewFlags * 6 + returnItem.counts.openRequests * 5;
 }
 
 function getRankedPriorityCards() {
@@ -563,7 +563,7 @@ function getDashboardMetrics(returnItems) {
     clientBlockers: returnItems.filter(
       (item) => item.nextOwner === "Client" && item.counts.openRequests > 0
     ).length,
-    aiWarnings: returnItems.reduce((total, item) => total + item.counts.aiWarnings, 0),
+    reviewFlags: returnItems.reduce((total, item) => total + item.counts.reviewFlags, 0),
     reviewerReady: returnItems.filter((item) => item.nextOwner === "Reviewer").length,
   };
 }
@@ -579,7 +579,7 @@ const pageTitles = {
 };
 
 const fieldStateLabels = {
-  ai: "AI · Needs approval",
+  suggested: "AI-generated · Needs approval",
   verified: "Verified",
   editable: "Editable",
   locked: "Locked",
@@ -732,8 +732,8 @@ function openReturn(returnId, route = "workspace", fieldId = null) {
   state.correctionFieldId = null;
   if (route === "review") {
     const requestedField = getReviewFields().find((field) => field.id === fieldId);
-    const warning = getReviewFields().find((field) => field.state === "ai");
-    state.reviewFieldId = requestedField?.id || warning?.id || getReviewFields()[0]?.id;
+    const suggestion = getReviewFields().find((field) => field.state === "suggested");
+    state.reviewFieldId = requestedField?.id || suggestion?.id || getReviewFields()[0]?.id;
   }
   normalizeState();
   render();
@@ -761,7 +761,7 @@ function pickField(fieldId) {
 function normalizeState() {
   const returnFields = getReviewFields();
   if (!returnFields.some((field) => field.id === state.reviewFieldId)) {
-    state.reviewFieldId = returnFields.find((field) => field.state === "ai")?.id || returnFields[0]?.id;
+    state.reviewFieldId = returnFields.find((field) => field.state === "suggested")?.id || returnFields[0]?.id;
     state.correctionFieldId = null;
   }
   if (state.role === "client") {
@@ -899,8 +899,8 @@ function renderDashboard() {
               <p class="muted tiny">Returns waiting on client action</p>
             </div>
             <div class="kpi">
-              <p class="label">AI warnings</p>
-              <div class="kpi-value">${metrics.aiWarnings}</div>
+              <p class="label">Review flags</p>
+              <div class="kpi-value">${metrics.reviewFlags}</div>
               <p class="muted tiny">Across the current queue view</p>
             </div>
             <div class="kpi">
@@ -929,7 +929,7 @@ function renderDashboard() {
                       <p class="label">${card.badge}</p>
                       <h4>${card.title}</h4>
                       <p class="muted">${card.reason}</p>
-                      <p class="tiny note">Priority score ${card.score} · blocker, owner, urgency, and AI risk.</p>
+                      <p class="tiny note">Priority score ${card.score} · blocker, owner, urgency, and source-match risk.</p>
                     </div>
                     <button type="button" data-return-id="${card.returnId}" data-route="${card.route}" ${card.fieldId ? `data-field-id="${card.fieldId}"` : ""} class="open-return">
                       ${card.action}
@@ -1001,7 +1001,7 @@ function renderDashboard() {
                   </div>
                   <div class="row-inline" style="margin-top:10px;">
                     <span class="pill">Next owner: ${escapeHtml(item.nextOwner)}</span>
-                    <span class="pill">AI warnings: ${item.counts.aiWarnings}</span>
+                    <span class="pill">Review flags: ${item.counts.reviewFlags}</span>
                     <span class="pill">Priority: ${getReturnPriorityScore(item)}</span>
                   </div>
                 </button>`
@@ -1357,7 +1357,7 @@ function renderWorkspace() {
                   <p class="muted">${doc.note}</p>
                 </div>
                 <span class="field-state ${
-                  doc.tag === "Missing" ? "locked" : doc.tag === "AI warning" ? "ai" : doc.tag === "Verified" ? "verified" : "editable"
+                  doc.tag === "Missing" ? "locked" : doc.tag === "Needs review" ? "suggested" : doc.tag === "Verified" ? "verified" : "editable"
                 }">${doc.tag}</span>
               </div>
             </article>`
@@ -1469,13 +1469,13 @@ function renderWorkspace() {
             ${
               state.role === "cpa"
                 ? `
-                <li>Sees internal notes, AI warnings, ownership, and blockers.</li>
+                <li>Sees internal notes, review flags, ownership, and blockers.</li>
                 <li>Can move from request → document → field review without leaving the shell.</li>
                 <li>Can access documents, messages, requests, and field review from one return.</li>`
                 : state.role === "reviewer"
                   ? `
                 <li>Sees evidence, internal notes, unresolved approvals, and reviewer-ready work.</li>
-                <li>Can confirm or correct AI output while preserving the audit trail.</li>
+                <li>Can confirm or correct generated suggestions while preserving the audit trail.</li>
                 <li>Can review approvals and evidence without leaving the return.</li>`
                   : `
                 <li>Sees only client-safe requests and progress.</li>
@@ -1512,7 +1512,7 @@ function renderReview() {
             <h3 class="section-title">Review field states</h3>
           </div>
           <div class="row-inline">
-            <span class="field-state ai">AI · Needs approval</span>
+            <span class="field-state suggested">AI-generated · Needs approval</span>
             <span class="field-state verified">Verified</span>
             <span class="field-state editable">Editable</span>
             <span class="field-state locked">Locked</span>
@@ -1562,9 +1562,9 @@ function renderReview() {
             </article>
 
             <article class="summary-row">
-              <p class="label">AI reasoning</p>
-              <p>${escapeHtml(activeField.aiExplanation)}</p>
-              <div class="confidence-meter" style="margin-top:12px;" role="progressbar" aria-label="AI confidence" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${activeField.confidence}">
+              <p class="label">Why this was suggested</p>
+              <p>${escapeHtml(activeField.suggestionExplanation)}</p>
+              <div class="confidence-meter" style="margin-top:12px;" role="progressbar" aria-label="Source-match confidence" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${activeField.confidence}">
                 <strong>${activeField.confidence}%</strong>
                 <div class="confidence-track"><span style="width:${activeField.confidence}%"></span></div>
               </div>
@@ -1577,7 +1577,7 @@ function renderReview() {
             <article class="summary-row">
               <p class="label">Reviewer action</p>
               <p>${
-                activeField.state === "ai"
+                activeField.state === "suggested"
                   ? "Confirm the mapping or override it with a reason."
                   : activeField.state === "verified"
                     ? "No action needed unless an upstream source changes."
@@ -1586,9 +1586,9 @@ function renderReview() {
                       : "Review and adjust if the questionnaire answer conflicts with source support."
               }</p>
               ${
-                activeField.state === "ai"
+                activeField.state === "suggested"
                   ? `<div class="review-actions">
-                      <button type="button" class="primary-action" id="confirm-ai-field">Confirm mapping</button>
+                      <button type="button" class="primary-action" id="confirm-suggested-field">Confirm mapping</button>
                       <button type="button" class="ghost-button" id="correct-review-field">Correct value</button>
                     </div>`
                   : activeField.state === "editable"
@@ -1676,15 +1676,15 @@ function renderReview() {
     button.addEventListener("click", () => pickField(button.dataset.fieldId));
   });
 
-  route.querySelector("#confirm-ai-field")?.addEventListener("click", () => {
+  route.querySelector("#confirm-suggested-field")?.addEventListener("click", () => {
     const actionOwner = state.role === "reviewer" ? "Reviewer" : "CPA";
     activeField.state = "verified";
     activeField.confidence = 100;
     activeField.history = `${activeField.history} → ${actionOwner} confirmed mapping`;
     activeField.canEdit = "Locked after verification";
-    activeField.aiExplanation = `${activeField.aiExplanation} Human review confirmed the recommendation.`;
+    activeField.suggestionExplanation = `${activeField.suggestionExplanation} Human review confirmed the recommendation.`;
     const activeReturn = getActiveReturn();
-    activeReturn.counts.aiWarnings = Math.max(0, activeReturn.counts.aiWarnings - 1);
+    activeReturn.counts.reviewFlags = Math.max(0, activeReturn.counts.reviewFlags - 1);
     render();
     window.requestAnimationFrame(() =>
       document.querySelector(`[data-field-id="${activeField.id}"]`)?.focus()
@@ -1711,18 +1711,18 @@ function renderReview() {
     const correctionReason = String(formData.get("correctionReason") || "").trim();
     if (!correctedValue || !correctionReason) return;
     const actionOwner = state.role === "reviewer" ? "Reviewer" : "CPA";
-    const wasAiGenerated = activeField.state === "ai";
+    const wasSuggested = activeField.state === "suggested";
     activeField.value = correctedValue;
     activeField.evidence = `${actionOwner} correction saved. Reason: ${correctionReason}`;
     activeField.history = `${activeField.history} → ${actionOwner} corrected value with source note`;
     activeField.state = "verified";
     activeField.confidence = 100;
     activeField.canEdit = "Locked after verification";
-    activeField.aiExplanation = "The original AI output was replaced by a human-reviewed correction. The reason remains in the audit trail.";
+    activeField.suggestionExplanation = "The original automated suggestion was replaced by a human-reviewed correction. The reason remains in the audit trail.";
     state.correctionFieldId = null;
     const activeReturn = getActiveReturn();
-    if (wasAiGenerated) {
-      activeReturn.counts.aiWarnings = Math.max(0, activeReturn.counts.aiWarnings - 1);
+    if (wasSuggested) {
+      activeReturn.counts.reviewFlags = Math.max(0, activeReturn.counts.reviewFlags - 1);
     }
     render();
     window.requestAnimationFrame(() =>
@@ -1922,9 +1922,9 @@ function completeClientUpload() {
   insuranceField.page = "Page 1";
   insuranceField.evidence = "The uploaded statement shows 14,880.00 in eligible officer health insurance premiums.";
   insuranceField.confidence = 93;
-  insuranceField.state = "ai";
-  insuranceField.aiExplanation = "The statement total is clear and matches twelve monthly premium entries; CPA classification review remains required.";
-  insuranceField.history = "Client uploaded → AI extracted total → awaiting CPA classification review";
+  insuranceField.state = "suggested";
+  insuranceField.suggestionExplanation = "The statement total is clear and matches twelve monthly premium entries; CPA classification review remains required.";
+  insuranceField.history = "Client uploaded → statement total captured → awaiting CPA classification review";
   insuranceField.canEdit = "Editable with reason";
   const insuranceRequest = data.workspace.requests.find((request) => request.title.startsWith("Officer health"));
   insuranceRequest.state = "complete";
@@ -1965,17 +1965,17 @@ function completeVehicleConfirmation(event) {
   const isBusinessMiles = selectedVehicleUse === "business-miles";
   state.clientVehicleConfirmed = true;
   const vehicleField = data.reviewFields.find((field) => field.id === "vehicle-use");
-  const addsAiWarning = !isBusinessMiles && vehicleField.state !== "ai";
+  const addsReviewFlag = !isBusinessMiles && vehicleField.state !== "suggested";
   vehicleField.value = isBusinessMiles ? "82%" : "Needs preparer correction";
   vehicleField.evidence = isBusinessMiles
     ? "Client confirmed that 82% represents business miles only. The preparer can override after source review."
     : "Client clarified that 82% represents total vehicle usage, not business miles. The preparer must correct the business-use percentage.";
   vehicleField.confidence = isBusinessMiles ? 94 : 38;
-  vehicleField.state = isBusinessMiles ? "editable" : "ai";
+  vehicleField.state = isBusinessMiles ? "editable" : "suggested";
   vehicleField.history = isBusinessMiles
-    ? "Client answered → client confirmed business-mile meaning → AI sanity-check passed → preparer review pending"
+    ? "Client answered → client confirmed business-mile meaning → automated consistency check passed → preparer review pending"
     : "Client answered → client clarified total-usage meaning → preparer correction required";
-  vehicleField.aiExplanation = isBusinessMiles
+  vehicleField.suggestionExplanation = isBusinessMiles
     ? "The client confirmed that 82% refers to business miles, and the answer remains editable until preparer review."
     : "The client clarified that 82% is total usage, so the system withheld a business-use recommendation and routed the field for correction.";
   vehicleField.canEdit = isBusinessMiles ? "Editable" : "Editable with reason";
@@ -1984,7 +1984,7 @@ function completeVehicleConfirmation(event) {
   vehicleRequest.due = "Confirmed just now";
   vehicleRequest.owner = "CPA";
   const ashfordReturn = data.returns.find((item) => item.id === "return-ashford-2025");
-  ashfordReturn.stage = isBusinessMiles ? "AI review needed" : "CPA correction needed";
+  ashfordReturn.stage = isBusinessMiles ? "CPA verification needed" : "CPA correction needed";
   ashfordReturn.nextOwner = "CPA";
   ashfordReturn.blocking = isBusinessMiles ? "No client blockers" : "Correct vehicle-use percentage";
   ashfordReturn.completion = isBusinessMiles ? 88 : 86;
@@ -1992,7 +1992,7 @@ function completeVehicleConfirmation(event) {
     ? "The client package is complete. The CPA can now finish source review and prepare the reviewer handoff."
     : "The client package is complete, and the vehicle answer is clear. The CPA must correct the business-use percentage before review.";
   ashfordReturn.counts.openRequests = 0;
-  if (addsAiWarning) ashfordReturn.counts.aiWarnings += 1;
+  if (addsReviewFlag) ashfordReturn.counts.reviewFlags += 1;
   const ashfordPriority = data.priorityCards.find((card) => card.returnId === "return-ashford-2025");
   ashfordPriority.title = isBusinessMiles
     ? "Review the completed Ashford client package"

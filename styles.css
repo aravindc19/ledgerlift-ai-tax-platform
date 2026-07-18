@@ -424,7 +424,7 @@ button:focus-visible,
 }
 
 .badge.violet,
-.field-state.ai {
+.field-state.suggested {
   background: #f3edff;
   color: var(--violet);
 }
