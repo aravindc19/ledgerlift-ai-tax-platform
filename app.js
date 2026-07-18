@@ -1510,7 +1510,7 @@ function renderReview() {
   }[activeField.state];
   const activeFieldStateLabel =
     activeField.state === "suggested"
-      ? "AI-generated · Needs approval"
+      ? "Suggested · Needs approval"
       : fieldStateLabels[activeField.state];
 
   route.innerHTML = `

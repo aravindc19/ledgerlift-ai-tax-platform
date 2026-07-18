@@ -137,10 +137,10 @@ def main() -> int:
         "AI sanity-check",
     )
     check(not any(phrase in html + js for phrase in unnecessary_ai_phrases) and
-          len(re.findall(r"\bAI\b", html + js)) == 1 and
+          not re.search(r"\bAI\b", html + js) and
           'suggested: "Suggested · Needs approval"' in js and
-          '"AI-generated · Needs approval"' in js,
-          "AI terminology is limited to explicit provenance in staff review", failures)
+          '"AI-generated · Needs approval"' not in js,
+          "Suggested review states avoid unnecessary AI terminology", failures)
     check('suggested: "Why this was suggested"' in js and
           'verified: "Verification note"' in js and
           'editable: "Validation note"' in js and
@@ -150,7 +150,7 @@ def main() -> int:
     check('activeField.state === "suggested"' in js and
           'aria-label="Source-match confidence"' in js and
           'vehicleField.state = "editable";' in js,
-          "Generated provenance and confidence appear only for generated suggestions", failures)
+          "Suggestion evidence and confidence appear only for suggested values", failures)
     check('dashboardScope: "mine"' in js and 'data-dashboard-scope="firm"' in js and
           'id="dashboard-search"' in js and 'id="dashboard-next-page"' in js,
           "Dashboard supports preparer and firm queues with search and pagination", failures)

@@ -86,7 +86,7 @@ This is a prototype-level accessibility implementation rather than a formal WCAG
 - Priorities combine blocker state, current owner, urgency, and source-match risk so the dashboard leads directly to action.
 - Conversations stay attached to requests, documents, and return issues instead of becoming a separate inbox.
 - One shared shell adapts by role so personal and firm contexts remain distinct without splitting into separate products.
-- AI-generated suggestions are clearly identified and include evidence, uncertainty, editability, and an explicit human decision path.
+- System-suggested values are clearly identified and include evidence, uncertainty, editability, and an explicit human decision path.
 - Client actions update the connected workflow rather than changing only the screen where the action occurred.
 - Large workspaces use summary/detail views and progressive disclosure instead of rendering every item at once.
 
